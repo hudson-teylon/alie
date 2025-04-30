@@ -136,13 +136,14 @@ def main():
             padding: 20px;
             max-height: 60vh;
             overflow-y: auto;
+            margin-bottom: 20px;
         }
         /* Layout para input e botões */
         .input-button-row {
             display: flex;
             align-items: center;
             gap: 10px;
-            margin-bottom: 20px;
+            margin-top: 20px;
         }
         </style>
     """, unsafe_allow_html=True)
@@ -177,7 +178,24 @@ def main():
 
     # Contêiner principal
     with st.container():
-        # Campo de entrada e botões na parte superior
+        # Contêiner para mensagens
+        st.markdown('<div class="chat-messages-container">', unsafe_allow_html=True)
+        for i, msg in enumerate(st.session_state['mensagens']):
+            if msg[0] == 'user':
+                st.markdown(f"""
+                    <div class="message-container user-message">
+                        <strong>Você:</strong> {msg[1]}
+                    </div>
+                    """, unsafe_allow_html=True)
+            else:
+                st.markdown(f"""
+                    <div class="message-container assistant-message">
+                        <strong>Alie:</strong> {msg[1]}
+                    </div>
+                    """, unsafe_allow_html=True)
+        st.markdown('</div>', unsafe_allow_html=True)
+
+        # Campo de entrada e botões abaixo das mensagens
         st.markdown('<div class="input-button-row">', unsafe_allow_html=True)
         pergunta_key = f"pergunta_input_{len(st.session_state['mensagens'])}"
         st.text_input(
@@ -203,23 +221,6 @@ def main():
                 st.session_state['mensagens'] = []
                 st.session_state['pergunta'] = ""
                 st.rerun()
-        st.markdown('</div>', unsafe_allow_html=True)
-
-        # Contêiner para mensagens
-        st.markdown('<div class="chat-messages-container">', unsafe_allow_html=True)
-        for i, msg in enumerate(st.session_state['mensagens']):
-            if msg[0] == 'user':
-                st.markdown(f"""
-                    <div class="message-container user-message">
-                        <strong>Você:</strong> {msg[1]}
-                    </div>
-                    """, unsafe_allow_html=True)
-            else:
-                st.markdown(f"""
-                    <div class="message-container assistant-message">
-                        <strong>Alie:</strong> {msg[1]}
-                    </div>
-                    """, unsafe_allow_html=True)
         st.markdown('</div>', unsafe_allow_html=True)
 
 if __name__ == "__main__":

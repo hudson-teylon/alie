@@ -1,4 +1,6 @@
-streamlit
-langchain_groq
-langchain
-langchain_community
+streamlit>=1.31.0
+langchain>=0.2.0
+langchain-community>=0.2.0
+langchain-groq>=0.1.0
+beautifulsoup4>=4.12.3
+youtube-transcript-api>=0.6.2
