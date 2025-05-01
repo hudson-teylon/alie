@@ -148,9 +148,9 @@ def main():
         </style>
     """, unsafe_allow_html=True)
 
-    st.sidebar.header("Escolha uma opção:")
+    st.sidebar.header("Escolha uma opção!")
     opcoes = ["Carregar site", "Carregar vídeo do YouTube"]
-    opcao = st.sidebar.radio("Escolha Site ou YouTube", opcoes)
+    opcao = st.sidebar.radio("Te ajudo a entender melhor ou resumir um site ou um vídeo.", opcoes)
     
     if opcao == "Carregar site":
         url_site = st.text_input('Digite a URL do site:')
