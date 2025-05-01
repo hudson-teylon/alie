@@ -6,14 +6,11 @@ from langchain_community.document_loaders import WebBaseLoader
 from langchain_community.document_loaders import YoutubeLoader
 import json
 
-# Definindo a chave da API
 api_key = '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'
 os.environ['GROQ_API_KEY'] = api_key
 
-# Inicializando o chat
 chat = ChatGroq(model='llama-3.3-70b-versatile')
 
-# Função que gera a resposta do bot
 def resposta_bot(mensagens, documento):
     mensagem_system = '''Você é um assistente amigável que se chama Alie. Você utiliza as seguintes informações para formular as suas respostas: {informacoes}'''
     mensagens_modelo = [('system', mensagem_system)]
@@ -24,7 +21,6 @@ def resposta_bot(mensagens, documento):
     try:
         return chain.invoke({'informacoes': documento}).content
     except Exception as e:
-        # Primeiro, tentamos tratar rate_limit de forma amigável
         try:
             err_data = json.loads(str(e).split("Error code:")[-1].strip())
             if err_data.get("error", {}).get("code") == "rate_limit_exceeded":
@@ -32,10 +28,8 @@ def resposta_bot(mensagens, documento):
                 return f"O meu limite de uso gratuito excedeu, posso responder novamente em {wait}."
         except:
             pass
-        # Agora retornamos o erro completo para debug
         return f"[Erro interno]: {str(e)}"
 
-# Função para carregar o conteúdo do site
 def carrega_site(url_site):
     loader = WebBaseLoader(url_site)
     lista_documentos = loader.load()
@@ -44,7 +38,6 @@ def carrega_site(url_site):
         documento = documento + doc.page_content
     return documento
 
-# Função para carregar o conteúdo do vídeo do YouTube
 def carrega_youtube(url_youtube):
     try:
         loader = YoutubeLoader.from_youtube_url(url_youtube, language=['pt'])
@@ -76,9 +69,6 @@ def main():
         margin-bottom: 16px;
         padding-bottom: 8px;
         border-bottom: 1px solid #ccc;
-    }
-    .stButton>button {
-        width: 100%;
     }
     </style>
     """, unsafe_allow_html=True)
@@ -117,7 +107,10 @@ def main():
 
     with st.container():
         st.markdown('<div class="input-button-row">', unsafe_allow_html=True)
-        pergunta_key = f"pergunta_input_{len(st.session_state['mensagens'])}"
+        pergunta_key = "pergunta_input"
+
+        if pergunta_key not in st.session_state:
+            st.session_state[pergunta_key] = ""
 
         def enviar_pergunta():
             pergunta = st.session_state[pergunta_key].strip()
@@ -125,18 +118,15 @@ def main():
                 st.session_state['mensagens'].append(('user', pergunta))
                 resposta = resposta_bot(st.session_state['mensagens'], documento)
                 st.session_state['mensagens'].append(('assistant', resposta))
-                st.session_state['pergunta'] = ""
+                st.session_state[pergunta_key] = ""
 
         st.text_input(
             "Mensagem",
-            value=st.session_state['pergunta'],
+            value=st.session_state[pergunta_key],
             key=pergunta_key,
             placeholder="Converse aqui",
             on_change=enviar_pergunta
         )
-
-        if st.button("Enviar", key=f"enviar_{len(st.session_state['mensagens'])}"):
-            enviar_pergunta()
 
         st.markdown('</div>', unsafe_allow_html=True)
 
