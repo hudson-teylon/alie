@@ -126,39 +126,27 @@ def main():
                 border: 1px solid #d9d9d9;
             }
         }
-        /* Contêiner principal do chat */
-        .chat-main-container {
-            display: flex;
-            flex-direction: column;
-            max-height: 80vh;
-            border: 1px solid #d9d9d9;
-            border-radius: 8px;
-            padding: 10px;
-            background-color: #fafafa;
-        }
-        /* Contêiner de mensagens */
+        /* Contêiner de mensagens (somente visível quando há mensagens) */
         .chat-messages-container {
-            flex-grow: 1;
             overflow-y: auto;
             padding: 10px;
-            min-height: 50px;
+            margin-bottom: 10px;
             max-height: 60vh;
+            border: 1px solid #d9d9d9;
+            border-radius: 8px;
+            background-color: #fafafa;
         }
         /* Layout para input e botões */
         .input-button-row {
             display: flex;
             align-items: center;
             gap: 10px;
-            padding: 10px;
-            background-color: #ffffff;
+            padding: 10px 0;
         }
         @media (prefers-color-scheme: dark) {
-            .chat-main-container {
+            .chat-messages-container {
                 border: 1px solid #4a4a4a;
                 background-color: #1a1a1a;
-            }
-            .input-button-row {
-                background-color: #2a2a2a;
             }
         }
         </style>
@@ -192,35 +180,34 @@ def main():
     if 'pergunta' not in st.session_state:
         st.session_state['pergunta'] = ""
 
-    # Contêiner principal do chat
+    # Contêiner principal
     with st.container():
-        st.markdown('<div class="chat-main-container">', unsafe_allow_html=True)
-        
-        # Contêiner para mensagens
-        st.markdown('<div class="chat-messages-container">', unsafe_allow_html=True)
-        for i, msg in enumerate(st.session_state['mensagens']):
-            if msg[0] == 'user':
-                st.markdown(f"""
-                    <div class="message-container user-message">
-                        <strong>Você:</strong> {msg[1]}
-                    </div>
-                    """, unsafe_allow_html=True)
-            else:
-                st.markdown(f"""
-                    <div class="message-container assistant-message">
-                        <strong>Alie:</strong> {msg[1]}
-                    </div>
-                    """, unsafe_allow_html=True)
-        # Auto-rolagem para a última mensagem
-        st.markdown("""
-            <script>
-                const chatContainer = document.querySelector('.chat-messages-container');
-                chatContainer.scrollTop = chatContainer.scrollHeight;
-            </script>
-        """, unsafe_allow_html=True)
-        st.markdown('</div>', unsafe_allow_html=True)
+        # Mostrar o contêiner de mensagens somente se houver mensagens
+        if st.session_state['mensagens']:
+            st.markdown('<div class="chat-messages-container">', unsafe_allow_html=True)
+            for i, msg in enumerate(st.session_state['mensagens']):
+                if msg[0] == 'user':
+                    st.markdown(f"""
+                        <div class="message-container user-message">
+                            <strong>Você:</strong> {msg[1]}
+                        </div>
+                        """, unsafe_allow_html=True)
+                else:
+                    st.markdown(f"""
+                        <div class="message-container assistant-message">
+                            <strong>Alie:</strong> {msg[1]}
+                        </div>
+                        """, unsafe_allow_html=True)
+            # Auto-rolagem para a última mensagem
+            st.markdown("""
+                <script>
+                    const chatContainer = document.querySelector('.chat-messages-container');
+                    chatContainer.scrollTop = chatContainer.scrollHeight;
+                </script>
+            """, unsafe_allow_html=True)
+            st.markdown('</div>', unsafe_allow_html=True)
 
-        # Campo de entrada e botões abaixo das mensagens
+        # Campo de entrada e botões (aparece abaixo do campo de URL ou das mensagens)
         st.markdown('<div class="input-button-row">', unsafe_allow_html=True)
         pergunta_key = f"pergunta_input_{len(st.session_state['mensagens'])}"
         st.text_input(
@@ -246,8 +233,6 @@ def main():
                 st.session_state['mensagens'] = []
                 st.session_state['pergunta'] = ""
                 st.rerun()
-        st.markdown('</div>', unsafe_allow_html=True)
-        
         st.markdown('</div>', unsafe_allow_html=True)
 
 if __name__ == "__main__":
