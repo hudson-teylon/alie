@@ -52,15 +52,15 @@ def main():
         }
         /* Mensagem do usuário (light mode) */
         .user-message-light {
-            background-color: #e6f3ff;
-            color: #1a1a1a;
+            background-color: #ffffff;
+            color: #000000;
             margin-left: auto;
-            border: 1px solid #b3d4fc;
+            border: 1px solid #d9d9d9;
         }
         /* Mensagem do assistente (light mode) */
         .assistant-message-light {
-            background-color: #f0f0f0;
-            color: #1a1a1a;
+            background-color: #ffffff;
+            color: #000000;
             margin-right: auto;
             border: 1px solid #d9d9d9;
         }
@@ -111,18 +111,18 @@ def main():
         }
         @media (prefers-color-scheme: light) {
             .user-message {
-                background-color: #e6f3ff;
-                color: #1a1a1a;
-                border: 1px solid #b3d4fc;
+                background-color: #ffffff;
+                color: #000000;
+                border: 1px solid #d9d9d9;
             }
             .assistant-message {
-                background-color: #f0f0f0;
-                color: #1a1a1a;
+                background-color: #ffffff;
+                color: #000000;
                 border: 1px solid #d9d9d9;
             }
             .stTextInput input {
                 background-color: #ffffff;
-                color: #1a1a1a;
+                color: #000000;
                 border: 1px solid #d9d9d9;
             }
         }
@@ -208,32 +208,33 @@ def main():
             st.markdown('</div>', unsafe_allow_html=True)
 
         # Campo de entrada e botões (aparece abaixo do campo de URL ou das mensagens)
-        st.markdown('<div class="input-button-row">', unsafe_allow_html=True)
+        # Usar uma chave única para evitar renderizações duplicadas
         pergunta_key = f"pergunta_input_{len(st.session_state['mensagens'])}"
-        st.text_input(
-            "",
-            value=st.session_state['pergunta'],
-            key=pergunta_key,
-            placeholder="Converse aqui",
-            on_change=lambda: st.session_state.update(pergunta=st.session_state[pergunta_key])
-        )
-        
-        # Botões "Enviar" e "Encerrar conversa"
-        col1, col2 = st.columns([1, 1])
-        with col1:
-            if st.button("Enviar"):
-                if st.session_state['pergunta']:
-                    st.session_state['mensagens'].append(('user', st.session_state['pergunta']))
-                    resposta = resposta_bot(st.session_state['mensagens'], documento)
-                    st.session_state['mensagens'].append(('assistant', resposta))
+        with st.container():
+            st.markdown('<div class="input-button-row">', unsafe_allow_html=True)
+            pergunta = st.text_input(
+                "",
+                value="",
+                key=pergunta_key,
+                placeholder="Converse aqui"
+            )
+            
+            # Botões "Enviar" e "Encerrar conversa"
+            col1, col2 = st.columns([1, 1])
+            with col1:
+                if st.button("Enviar", key=f"enviar_{len(st.session_state['mensagens'])}"):
+                    if pergunta:
+                        st.session_state['mensagens'].append(('user', pergunta))
+                        resposta = resposta_bot(st.session_state['mensagens'], documento)
+                        st.session_state['mensagens'].append(('assistant', resposta))
+                        st.session_state['pergunta'] = ""
+                        st.rerun()
+            with col2:
+                if st.button("Encerrar conversa", key=f"encerrar_{len(st.session_state['mensagens'])}"):
+                    st.session_state['mensagens'] = []
                     st.session_state['pergunta'] = ""
                     st.rerun()
-        with col2:
-            if st.button("Encerrar conversa"):
-                st.session_state['mensagens'] = []
-                st.session_state['pergunta'] = ""
-                st.rerun()
-        st.markdown('</div>', unsafe_allow_html=True)
+            st.markdown('</div>', unsafe_allow_html=True)
 
 if __name__ == "__main__":
     main()
