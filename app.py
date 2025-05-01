@@ -6,14 +6,11 @@ from langchain_community.document_loaders import WebBaseLoader
 from langchain_community.document_loaders import YoutubeLoader
 import uuid
 
-# Definindo a chave da API
 api_key = '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'
 os.environ['GROQ_API_KEY'] = api_key
 
-# Inicializando o chat
 chat = ChatGroq(model='meta-llama/llama-4-maverick-17b-128e-instruct')
 
-# Função que gera a resposta do bot
 def resposta_bot(mensagens, documento):
     mensagem_system = '''Você é um assistente amigável que se chama Alie. Você utiliza as seguintes informações para formular as suas respostas: {informacoes}'''
     mensagens_modelo = [('system', mensagem_system)]
@@ -22,7 +19,6 @@ def resposta_bot(mensagens, documento):
     chain = template | chat
     return chain.invoke({'informacoes': documento}).content
 
-# Função para carregar o conteúdo do site
 def carrega_site(url_site):
     loader = WebBaseLoader(url_site)
     lista_documentos = loader.load()
@@ -31,7 +27,6 @@ def carrega_site(url_site):
         documento = documento + doc.page_content
     return documento
 
-# Função para carregar o conteúdo do vídeo do YouTube
 def carrega_youtube(url_youtube):
     loader = YoutubeLoader.from_youtube_url(url_youtube, language=['pt'])
     lista_documentos = loader.load()
@@ -44,7 +39,6 @@ def main():
     st.set_page_config(page_title="Alie Chat", layout="wide")
     st.title("Olá, sou a Alie!")
     
-    # Estilo CSS para mensagens, botões e campo de entrada
     st.markdown("""
         <style>
         /* Estilo geral para mensagens */
@@ -131,26 +125,48 @@ def main():
                 border: 1px solid #d9d9d9;
             }
         }
+        /* Contêiner principal do chat */
+        .chat-main-container {
+            display: flex;
+            flex-direction: column;
+            height: 70vh;
+            border: 1px solid #d9d9d9;
+            border-radius: 8px;
+            padding: 10px;
+            background-color: #fafafa;
+        }
         /* Contêiner de mensagens */
         .chat-messages-container {
-            padding: 20px;
-            max-height: 60vh;
+            flex-grow: 1;
             overflow-y: auto;
-            margin-bottom: 20px;
+            padding: 10px;
+            min-height: 100px;
         }
         /* Layout para input e botões */
         .input-button-row {
             display: flex;
             align-items: center;
             gap: 10px;
-            margin-top: 20px;
+            padding: 10px;
+            border-top: 1px solid #d9d9d9;
+            background-color: #ffffff;
+        }
+        @media (prefers-color-scheme: dark) {
+            .chat-main-container {
+                border: 1px solid #4a4a4a;
+                background-color: #1a1a1a;
+            }
+            .input-button-row {
+                border-top: 1px solid #4a4a4a;
+                background-color: #2a2a2a;
+            }
         }
         </style>
     """, unsafe_allow_html=True)
 
-    st.sidebar.header("Escolha uma opção!")
+    st.sidebar.header("Escolha uma opção:")
     opcoes = ["Carregar site", "Carregar vídeo do YouTube"]
-    opcao = st.sidebar.radio("Te ajudo a entender melhor ou resumir um site ou um vídeo.", opcoes)
+    opcao = st.sidebar.radio("Escolha Site ou YouTube", opcoes)
     
     if opcao == "Carregar site":
         url_site = st.text_input('Digite a URL do site:')
@@ -164,21 +180,18 @@ def main():
             documento = carrega_youtube(url_youtube)
             st.write("Conteúdo do vídeo carregado com sucesso!")
     
-    # Caso o documento não tenha sido carregado, inicializa uma string vazia
     if 'documento' not in locals():
         documento = ''
 
-    # Inicializar mensagens no session_state
     if 'mensagens' not in st.session_state:
         st.session_state['mensagens'] = []
     
-    # Inicializar o estado do campo de entrada
     if 'pergunta' not in st.session_state:
         st.session_state['pergunta'] = ""
 
-    # Contêiner principal
     with st.container():
-        # Contêiner para mensagens
+        st.markdown('<div class="chat-main-container">', unsafe_allow_html=True)
+        
         st.markdown('<div class="chat-messages-container">', unsafe_allow_html=True)
         for i, msg in enumerate(st.session_state['mensagens']):
             if msg[0] == 'user':
@@ -193,9 +206,15 @@ def main():
                         <strong>Alie:</strong> {msg[1]}
                     </div>
                     """, unsafe_allow_html=True)
+        
+        st.markdown("""
+            <script>
+                const chatContainer = document.querySelector('.chat-messages-container');
+                chatContainer.scrollTop = chatContainer.scrollHeight;
+            </script>
+        """, unsafe_allow_html=True)
         st.markdown('</div>', unsafe_allow_html=True)
 
-        # Campo de entrada e botões abaixo das mensagens
         st.markdown('<div class="input-button-row">', unsafe_allow_html=True)
         pergunta_key = f"pergunta_input_{len(st.session_state['mensagens'])}"
         st.text_input(
@@ -206,7 +225,6 @@ def main():
             on_change=lambda: st.session_state.update(pergunta=st.session_state[pergunta_key])
         )
         
-        # Botões "Enviar" e "Encerrar conversa"
         col1, col2 = st.columns([1, 1])
         with col1:
             if st.button("Enviar"):
@@ -222,6 +240,7 @@ def main():
                 st.session_state['pergunta'] = ""
                 st.rerun()
         st.markdown('</div>', unsafe_allow_html=True)
-
+        
+        st.markdown('</div>', unsafe_allow_html=True)
 if __name__ == "__main__":
     main()
