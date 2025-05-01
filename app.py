@@ -24,6 +24,7 @@ def resposta_bot(mensagens, documento):
     try:
         return chain.invoke({'informacoes': documento}).content
     except Exception as e:
+        # Primeiro, tentamos tratar rate_limit de forma amigável
         try:
             err_data = json.loads(str(e).split("Error code:")[-1].strip())
             if err_data.get("error", {}).get("code") == "rate_limit_exceeded":
@@ -31,7 +32,8 @@ def resposta_bot(mensagens, documento):
                 return f"O meu limite de uso gratuito excedeu, posso responder novamente em {wait}."
         except:
             pass
-        return "Houve um erro ao tentar responder. Tente novamente mais tarde."
+        # Agora retornamos o erro completo para debug
+        return f"[Erro interno]: {str(e)}"
 
 # Função para carregar o conteúdo do site
 def carrega_site(url_site):
